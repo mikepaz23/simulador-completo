@@ -1,0 +1,78 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Simulador ENARM Sencillo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background-color: white;
+            color: black;
+        }
+        .pregunta { margin-bottom: 20px; }
+        .opciones button {
+            display: block;
+            margin: 10px 0;
+            padding: 10px;
+            width: 100%;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .resultado { margin-top: 20px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>Simulador ENARM - Versión Sencilla</h1>
+    <div id="contenedor">
+        <div class="pregunta" id="pregunta"></div>
+        <div class="opciones" id="opciones"></div>
+        <div class="resultado" id="resultado"></div>
+    </div>
+
+    <script>
+        let preguntas = [];
+        let indiceActual = 0;
+
+        async function cargarPreguntas() {
+            const res = await fetch('simulador_preguntas_enarm.json');
+            preguntas = await res.json();
+            mostrarPregunta();
+        }
+
+        function mostrarPregunta() {
+            const pregunta = preguntas[indiceActual];
+            document.getElementById('pregunta').innerText = pregunta.pregunta;
+            const opcionesDiv = document.getElementById('opciones');
+            opcionesDiv.innerHTML = '';
+            for (let [key, value] of Object.entries(pregunta.opciones)) {
+                const btn = document.createElement('button');
+                btn.innerText = key + ') ' + value;
+                btn.onclick = () => responder(key);
+                opcionesDiv.appendChild(btn);
+            }
+            document.getElementById('resultado').innerText = '';
+        }
+
+        function responder(respuesta) {
+            const pregunta = preguntas[indiceActual];
+            if (respuesta === pregunta.respuesta_correcta) {
+                document.getElementById('resultado').innerText = "✅ Correcto. " + pregunta.justificacion;
+            } else {
+                document.getElementById('resultado').innerText = "❌ Incorrecto. " + pregunta.justificacion;
+            }
+            setTimeout(() => {
+                indiceActual++;
+                if (indiceActual < preguntas.length) {
+                    mostrarPregunta();
+                } else {
+                    document.getElementById('contenedor').innerHTML = "<h2>Simulador terminado. ¡Buen trabajo!</h2>";
+                }
+            }, 3000);
+        }
+
+        cargarPreguntas();
+    </script>
+</body>
+</html>
